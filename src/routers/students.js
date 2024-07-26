@@ -3,8 +3,8 @@ import { Router } from "express";
 import {
   getStudentsController,
   getStudentByIdController,
-} from "../controllers/students";
-import { ctrlWrapper } from "../utils/ctrlWrapper";
+} from "../controllers/students.js";
+import { ctrlWrapper } from "../utils/ctrlWrapper.js";
 
 const router = Router();
 
