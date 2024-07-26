@@ -7,6 +7,10 @@ import { getAllStudents, getStudentById } from "./services/students.js";
 // Читаємо змінну оточення PORT
 const PORT = Number(env("PORT", "3000"));
 
+if (isNaN(PORT)) {
+  throw new Error("Invalid port number");
+}
+
 export const startServer = () => {
   const app = express();
 
@@ -30,21 +34,6 @@ export const startServer = () => {
   app.get("/", (req, res) => {
     res.json({
       message: "Hello, World!",
-    });
-  });
-
-  // Middleware для обробки помилки в маршруті)
-  app.use("*", (req, res, next) => {
-    res.status(404).json({
-      message: "Not found",
-    });
-  });
-
-  // Middleware для обробких помилок (приймає 4 аргументи)
-  app.use((err, req, res, next) => {
-    res.status(500).json({
-      message: "Something went wrong",
-      error: err.message,
     });
   });
 
@@ -75,6 +64,21 @@ export const startServer = () => {
     // Відповідь, якщо контакт знайдено
     res.status(200).json({
       data: student,
+    });
+  });
+
+  // Middleware для обробки помилки в маршруті)
+  app.use("*", (req, res, next) => {
+    res.status(404).json({
+      message: "Not found",
+    });
+  });
+
+  // Middleware для обробких помилок (приймає 4 аргументи)
+  app.use((err, req, res, next) => {
+    res.status(500).json({
+      message: "Something went wrong",
+      error: err.message,
     });
   });
 
