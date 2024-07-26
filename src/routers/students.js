@@ -1,33 +1,16 @@
 import { Router } from "express";
-import { getAllStudents, getStudentById } from "../services/students.js";
+
+import {
+  getStudentsController,
+  getStudentByIdController,
+} from "../controllers/students";
+import { ctrlWrapper } from "../utils/ctrlWrapper";
 
 const router = Router();
 
-router.get("/students", async (req, res) => {
-  const students = await getAllStudents();
+router.get("/students", ctrlWrapper(getStudentsController));
 
-  res.status(200).json({
-    data: students,
-  });
-});
-
-router.get("/students/:studentId", async (req, res, next) => {
-  const { studentId } = req.params;
-  const student = await getStudentById(studentId);
-
-  // Відповідь, якщо контакт не знайдено
-  if (!student) {
-    res.status(404).json({
-      message: "Student not found",
-    });
-    return;
-  }
-
-  // Відповідь, якщо контакт знайдено
-  res.status(200).json({
-    data: student,
-  });
-});
+router.get("/students/:studentId", ctrlWrapper(getStudentByIdController));
 
 export default router;
 
@@ -37,3 +20,13 @@ export default router;
 //2. Далі переносимо контролери, які обробляють маршрути
 // /students та /students /:studentId із файла server.js у файл роутингу
 //students.js, але для їх оголошення замість app використовуємо створений router.
+
+//3. Тепер, імпортуємо створений роутер у файл server.js та додаємо його
+//як middleware до app, за допомогою методу app.use().
+
+//4. Для подальшої організації файлів застосунку виконаємо рефакторинг контролерів:
+//створимо папку src/controllers, де будемо зберігати функції для обробки запитів.
+//У файл src / controllers / students.js винесемо контролери, які зараз знаходяться
+//у файлі роутингу src / routes / students.js
+
+//5. Після цього використаємо контролери у файлі роутів.
