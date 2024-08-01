@@ -9,22 +9,50 @@ import {
   patchStudentController,
 } from "../controllers/students.js";
 import { ctrlWrapper } from "../utils/ctrlWrapper.js";
+import { validateBody } from "../middlewares/validateBody.js";
+import {
+  createStudentSchema,
+  updateStudentSchema,
+} from "../validation/students.js";
+import { isValidId } from "../middlewares/isValidId.js";
 
 const router = Router();
 
 router.get("/students", ctrlWrapper(getStudentsController));
 
-router.get("/students/:studentId", ctrlWrapper(getStudentByIdController));
+router.get(
+  "/students/:studentId",
+  isValidId,
+  ctrlWrapper(getStudentByIdController)
+);
 
 //Далі додамо POST-роут /students та використаємо контролер.
 
-router.post("/students", ctrlWrapper(createStudentController));
+router.post(
+  "/students",
+  validateBody(createStudentSchema),
+  ctrlWrapper(createStudentController)
+);
 
-router.delete("/students/:studentId", ctrlWrapper(deleteStudentController));
+router.delete(
+  "/students/:studentId",
+  isValidId,
+  ctrlWrapper(deleteStudentController)
+);
 
-router.put("/students/:studentId", ctrlWrapper(upsertStudentController));
+router.put(
+  "/students/:studentId",
+  validateBody(updateStudentSchema),
+  isValidId,
+  ctrlWrapper(upsertStudentController)
+);
 
-router.patch("/students/:studentId", ctrlWrapper(patchStudentController));
+router.patch(
+  "/students/:studentId",
+  validateBody(updateStudentSchema),
+  isValidId,
+  ctrlWrapper(patchStudentController)
+);
 
 export default router;
 

@@ -1,9 +1,103 @@
 import { StudentsCollection } from "../models/students.js";
+import { calculatePaginationData } from "../utils/calculatePaginationData.js";
+import { SORT_ORDER } from "../constants/index.js";
 
-export const getAllStudents = async () => {
-  const students = await StudentsCollection.find();
-  return students;
+// Залишилось додати до сервісу логіку для того, щоб правильно запитувати дані
+// з бази даних з пагінацією та сортуванням:
+
+export const getAllStudents = async ({
+  page = 1,
+  perPage = 10,
+  sortOrder = SORT_ORDER.ASC,
+  sortBy = "_id",
+  filter = {},
+}) => {
+  const limit = perPage;
+  const skip = (page - 1) * perPage;
+
+  const studentsQuery = StudentsCollection.find();
+
+  if (filter.gender) {
+    studentsQuery.where("gender").equals(filter.gender);
+  }
+  if (filter.maxAge) {
+    studentsQuery.where("age").lte(filter.maxAge);
+  }
+  if (filter.minAge) {
+    studentsQuery.where("age").gte(filter.minAge);
+  }
+  if (filter.maxAvgMark) {
+    studentsQuery.where("avgMark").lte(filter.maxAvgMark);
+  }
+  if (filter.minAvgMark) {
+    studentsQuery.where("avgMark").gte(filter.minAvgMark);
+  }
+
+  /* Замість цього коду */
+  // const studentsCount = await StudentsCollection.find()
+  //   .merge(studentsQuery)
+  //   .countDocuments();
+
+  // const students = await studentsQuery
+  //   .skip(skip)
+  //   .limit(limit)
+  //   .sort({ [sortBy]: sortOrder })
+  //   .exec();
+
+  /* Ми можемо написати такий код */
+
+  const [studentsCount, students] = await Promise.all([
+    StudentsCollection.find().merge(studentsQuery).countDocuments(),
+    studentsQuery
+      .skip(skip)
+      .limit(limit)
+      .sort({ [sortBy]: sortOrder })
+      .exec(),
+  ]);
+  // Цей рефакторинг коду використовує підхід паралельної обробки запитів
+  // до бази даних за допомогою Promise.all, що дозволяє ефективніше використовувати
+  // ресурси і скоротити час відповіді сервера.
+
+  const paginationData = calculatePaginationData(studentsCount, perPage, page);
+
+  return {
+    data: students,
+    ...paginationData,
+  };
 };
+
+// Тепер сервісна функція getAllStudents приймає об'єкт з параметрами page та perPage,
+// що вказують номер сторінки та кількість записів на сторінці відповідно.
+
+// Функція getAllStudents спочатку розраховує зміщення (skip), що дорівнює кількості записів,
+// що мають бути пропущені перед початком видачі на поточній сторінці.Вона також розраховує
+// ліміт записів, які мають бути повернуті на одній сторінці.
+
+// Далі, функція ініціює запит до бази даних для отримання списку студентів,
+// використовуючи спеціальні методи skip та limit для застосування пагінації.
+// Паралельно, вона робить запит для визначення загальної кількості студентів
+// за допомогою методу countDocuments.
+
+// Після отримання списку студентів і загальної кількості, функція викликає
+// сalculatePaginationData, яка обраховує і повертає дані для пагінації,
+// зокрема інформацію про загальну кількість сторінок і чи є наступна чи попередня сторінка.
+
+// Результатом виконання функції є об'єкт, що містить масив з даними про студентів
+// і додаткову інформацію про пагінацію, що дозволяє клієнту легко навігувати
+// між сторінками результатів.
+
+// Тепер ми маємо можливість сортувати результати запиту до бази даних студентів.
+// Параметри sortOrder та sortBy, визначені зі значеннями за замовчуванням,
+// дозволяють визначити порядок сортування та поле, за яким потрібно виконати
+// сортування(_id за замовчуванням).
+
+// Під час виклику функції, studentsQuery — запит до бази даних,
+// що ініціюється за допомогою StudentsCollection.find(), налаштовується так,
+// що він тепер включає, окрім методів skip та limit(для реалізації пагінації),
+// ще й метод sort.Цей метод дозволяє організувати записи за полем, вказаним у sortBy,
+// у порядку, заданому у sortOrder. Таке сортування дозволяє користувачам отримувати
+// дані в порядку, який найкраще відповідає їхнім потребам, забезпечуючи
+// більшу гнучкість та зручність у взаємодії з даними.
 
 export const getStudentById = async (studentId) => {
   const student = await StudentsCollection.findById(studentId);
