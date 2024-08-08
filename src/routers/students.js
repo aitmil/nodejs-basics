@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router } from 'express';
 
 import {
   getStudentsController,
@@ -7,51 +7,43 @@ import {
   deleteStudentController,
   upsertStudentController,
   patchStudentController,
-} from "../controllers/students.js";
-import { ctrlWrapper } from "../utils/ctrlWrapper.js";
-import { validateBody } from "../middlewares/validateBody.js";
+} from '../controllers/students.js';
+import { ctrlWrapper } from '../utils/ctrlWrapper.js';
+import { validateBody } from '../middlewares/validateBody.js';
 import {
   createStudentSchema,
   updateStudentSchema,
-} from "../validation/students.js";
-import { isValidId } from "../middlewares/isValidId.js";
+} from '../validation/students.js';
+import { isValidId } from '../middlewares/isValidId.js';
 
 const router = Router();
 
-router.get("/students", ctrlWrapper(getStudentsController));
+router.get('/', ctrlWrapper(getStudentsController));
 
-router.get(
-  "/students/:studentId",
-  isValidId,
-  ctrlWrapper(getStudentByIdController)
-);
+router.get('/:studentId', isValidId, ctrlWrapper(getStudentByIdController));
 
 //Далі додамо POST-роут /students та використаємо контролер.
 
 router.post(
-  "/students",
+  '/register',
   validateBody(createStudentSchema),
-  ctrlWrapper(createStudentController)
+  ctrlWrapper(createStudentController),
 );
 
-router.delete(
-  "/students/:studentId",
-  isValidId,
-  ctrlWrapper(deleteStudentController)
-);
+router.delete('/:studentId', isValidId, ctrlWrapper(deleteStudentController));
 
 router.put(
-  "/students/:studentId",
+  '/:studentId',
   validateBody(updateStudentSchema),
   isValidId,
-  ctrlWrapper(upsertStudentController)
+  ctrlWrapper(upsertStudentController),
 );
 
 router.patch(
-  "/students/:studentId",
+  '/:studentId',
   validateBody(updateStudentSchema),
   isValidId,
-  ctrlWrapper(patchStudentController)
+  ctrlWrapper(patchStudentController),
 );
 
 export default router;
